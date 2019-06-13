@@ -128,7 +128,7 @@
                 // 发送ajax请求,得到数据
                 $.ajax({
                     type:"post",
-                    url:"https://autumnfish.cn/big/admin/logout",
+                    url:"http://localhost:8000/admin/logout",
                     success: function(backData){
                         if(backData.code == 200){
                             window.location.href = "./login.html";
