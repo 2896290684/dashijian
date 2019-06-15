@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/main.css">
     <script src="js/jquery-1.12.4.min.js"></script>
     <script src="js/bootstrap/js/bootstrap.min.js"></script>
+    <script src="./js/template-web.js"></script>
 </head>
 
 <body>
@@ -95,7 +96,7 @@
                         </div>
                         <div class="form-group">
                             <label for="message-text" class="control-label">分类别名:</label>
-                            <input type="text" class="form-control" id="recipient-name">
+                            <input type="text" class="form-control" id="recipient-nickname">
                         </div>
                     </form>
                 </div>
@@ -118,10 +119,7 @@
             $('#addModal').modal('hide');
         });
 
-        $('#model_add').click(function () {
-            alert('add');
-            $('#addModal').modal('hide');
-        });
+
 
         $('.category_table').delegate('a', 'click', function () {
             if ($(this).hasClass('btn-info')) {
@@ -131,6 +129,18 @@
         })      
     </script>
 
+    <script id="tmp_cate" type="text/html">
+        {{each data}}
+        <tr>
+            <td>{{$value.name}}</td>
+            <td>{{$value.slug}}</td>
+            <td class="text-center">
+                <a href="javascript:editTr({&quot;id&quot;:&quot;1&quot;,&quot;slug&quot;:&quot;uncategorized&quot;,&quot;name&quot;:&quot;未分类&quot;});" class="btn btn-info btn-xs">编辑</a>
+                <a href="javascript:deleteTr( {{$value.id}} );" class="btn btn-danger btn-xs">删除</a>
+            </td>
+        </tr>
+        {{/each}}
+    </script>
     <script>
         $(function () {
             /*
@@ -155,11 +165,13 @@
                 }
             });
 
+
             //点击模态框中的确认按钮
             $('#model_add').click(function () {
                 //获取用户要新增的 文字类别和别名
                 var recipient_name = $('#recipient-name').val();
                 var recipient_nickname = $('#recipient-nickname').val();
+
                 //发送ajax请求
                 $.ajax({
                     type: 'post',
@@ -178,6 +190,8 @@
                                 success: function (backData) {
                                     //console.log(backData);
                                     if (backData.code == 200) {
+                                        //通过模板引擎把返回的数据渲染到页面
+                                        //调用模板引擎的方法
                                         var resHtml = template('tmp_cate', backData);
                                         $('tbody').html(resHtml);
                                     }
@@ -186,10 +200,15 @@
                         }
                     }
                 });
+
+                //隐藏模态框
                 $('#addModal').modal('hide');
             });
+
+
         });
     </script>
+
 </body>
 
 </html>
