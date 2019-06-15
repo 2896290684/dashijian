@@ -89,6 +89,17 @@
                     $('img.user_pic').attr('src', backData.data.user_pic);
                 }
             });
+            
+            //图片预览
+            $('#exampleInputFile').on('change',function(){
+                //获取选中的图片文件.
+                var icon = this.files[0];
+                //根据这个图片文件 创建一个url.
+                var url = URL.createObjectURL(icon);
+                //把这个url交给预览用的img
+                $('img.user_pic').attr('src', url);
+            });
+            
         }());
     </script>
 </body>
