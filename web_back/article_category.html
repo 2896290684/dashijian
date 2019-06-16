@@ -205,18 +205,41 @@
                 $('#addModal').modal('hide');
             });
 
-
             /*
-                1.给删除按钮设置点击事件.(删除按钮是模板引擎动态生成的,所以要用委托注册)
-
-                2.获取当前删除的这条数据(这条文章类别)的id
-
-                3.发送ajax请求,删除这条数据
-
-​	                删除成功要重新渲染数据:
-
-​	                我们用了一个投机的方式,直接把这一条数据给从dom树移除.
+                1.委托的方式给编辑按钮注册事件. 给编辑按钮设置自定义属性data-id保存要删除的这一条数据的id.
+                   点击新增分类按钮  和点击 编辑按钮, 弹出来的模态框是同一个.
+​                   点击编辑按钮  弹出的模态框,要修改他的title,还有他的   保存按钮名字,还有样式
+​                   点击新增分类按钮,  弹出的模态框 里面的信息要还原.
+                2.弹出的模态框是同一个, 那点击模态框里面的 新增/保存 按钮 就要做判断(是新增还是编辑);
+                3.点击编辑, 把当前编辑的这一条数据的 分类名称  和分类 别名  显示在模态框.
+                4.点击编辑按钮,, 弹出模态框,, 点击模态框中的保存
+​                   获取用户修改后的文章类别名称 和别名,  发送ajax请求.修改
             */
+            // 1.委托的方式给编辑按钮注册事件.给编辑按钮设置自定义属性data - id保存要删除的这一条数据的id.
+            $('tbody').on('click','a.btn-ye',function(){
+                var id = $(this).attr('data-id');
+                var name = $(this).parent().prev().prev().text(); //文章类型名
+                var slug = $(this).parent().prev().text(); //文章类型别名
+                 //把这两个值赋值给弹出来的模态框的input标签.
+                $('#recipient-name').val(name);//分类名称
+                $('#recipient-nickname').val(slug);//分类名称
+                $('#recipient-id').val(id);//分类名称
+
+                $('#addModal .modal-title').html('修改分类');
+                $('#model_add').text('保存').addClass('btn-success');
+                $('#addModal').modal('show');
+
+                // 点击新增分类按钮, 弹出的模态框 里面的信息要还原.
+                $('#addCategory').on('click',function(){
+                    $('#recipient-name').val('');//分类名称
+                    $('#recipient-nickname').val('');//分类名称
+                    $('#recipient-id').val('');//分类名称
+
+                    $('#addModal .modal-title').html('新增分类');
+                    $('#model_add').text('新增').removeClass('btn-success');
+                });
+            });
+
             // 1.给删除按钮设置点击事件.(删除按钮是模板引擎动态生成的,所以要用委托注册)
             $('tbody').on('click','a.btn-yun',function(){
                 var that = $(this);
@@ -237,6 +260,14 @@
                 });
             });
         });
+        
+            /*
+                1.给删除按钮设置点击事件.(删除按钮是模板引擎动态生成的,所以要用委托注册)
+                2.获取当前删除的这条数据(这条文章类别)的id
+                3.发送ajax请求,删除这条数据
+​	                删除成功要重新渲染数据:
+​	                我们用了一个投机的方式,直接把这一条数据给从dom树移除.
+            */
     </script>
 
 </body>
