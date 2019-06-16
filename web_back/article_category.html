@@ -135,8 +135,8 @@
             <td>{{$value.name}}</td>
             <td>{{$value.slug}}</td>
             <td class="text-center">
-                <a href="javascript:editTr({&quot;id&quot;:&quot;1&quot;,&quot;slug&quot;:&quot;uncategorized&quot;,&quot;name&quot;:&quot;未分类&quot;});" class="btn btn-info btn-xs">编辑</a>
-                <a href="javascript:deleteTr( {{$value.id}} );" class="btn btn-danger btn-xs">删除</a>
+                <a href="javascript:void(0);" data-id="{{$value.id}}" class="btn btn-info btn-xs btn-ye">编辑</a>
+                <a href="javascript:void(0);" data-id="{{$value.id}}" class="btn btn-danger btn-xs btn-yun">删除</a>
             </td>
         </tr>
         {{/each}}
@@ -206,6 +206,36 @@
             });
 
 
+            /*
+                1.给删除按钮设置点击事件.(删除按钮是模板引擎动态生成的,所以要用委托注册)
+
+                2.获取当前删除的这条数据(这条文章类别)的id
+
+                3.发送ajax请求,删除这条数据
+
+​	                删除成功要重新渲染数据:
+
+​	                我们用了一个投机的方式,直接把这一条数据给从dom树移除.
+            */
+            // 1.给删除按钮设置点击事件.(删除按钮是模板引擎动态生成的,所以要用委托注册)
+            $('tbody').on('click','a.btn-yun',function(){
+                var that = $(this);
+                var id = $(this).attr('data-id');
+                // 2.获取当前删除的这条数据(这条文章类别)的id
+                $.ajax({
+                    type:'post',
+                    url:'http://localhost:8000/admin/category_delete',
+                    data:{
+                        id:id
+                    },
+                    success: function(backData){
+                        console.log(backData);
+                        if(backData.code == 200){
+                            that.parent().parent().remove();
+                        };
+                    }
+                });
+            });
         });
     </script>
 
