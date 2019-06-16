@@ -73,7 +73,8 @@
                 <tfoot>
                     <tr>
                         <td colspan="3" class="text-center">
-                            <a href="#" class="btn btn-success" data-toggle="modal" data-target="#addModal">新增分类</a>
+                            <a href="#" id="addCategory" class="btn btn-success" data-toggle="modal"
+                                data-target="#addModal">新增分类</a>
                         </td>
                     </tr>
                 </tfoot>
@@ -90,13 +91,15 @@
                 </div>
                 <div class="modal-body">
                     <form>
+                        <!-- input标签的type属性是hidden,那他就是一个隐藏域,他本身就是看不见的. -->
+                        <input type="hidden" name="id" id="recipient-id">
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">分类名称:</label>
-                            <input type="text" class="form-control" id="recipient-name">
+                            <input type="text" name="name" class="form-control" id="recipient-name">
                         </div>
                         <div class="form-group">
                             <label for="message-text" class="control-label">分类别名:</label>
-                            <input type="text" class="form-control" id="recipient-nickname">
+                            <input type="text" name="slug" class="form-control" id="recipient-nickname">
                         </div>
                     </form>
                 </div>
@@ -117,16 +120,7 @@
         $('#model_shutoff').click(function () {
             alert('shutoff');
             $('#addModal').modal('hide');
-        });
-
-
-
-        $('.category_table').delegate('a', 'click', function () {
-            if ($(this).hasClass('btn-info')) {
-                $('#addModal .modal-title').html('修改分类名称');
-                $('#addModal').modal('show');
-            }
-        })      
+        });     
     </script>
 
     <script id="tmp_cate" type="text/html">
@@ -151,56 +145,75 @@
             3. 数据获取到之后渲染到页面上
             1. 结合模板引擎来渲染
             */
-            $.ajax({
-                type: 'get',
-                url: 'http://localhost:8000/admin/category_search',
-                success: function (backData) {
-                    //console.log(backData);
-                    if (backData.code == 200) {
-                        //通过模板引擎把返回的数据渲染到页面
-                        //调用模板引擎的方法
-                        var resHtml = template('tmp_cate', backData);
-                        $('tbody').html(resHtml);
-                    }
-                }
-            });
+            function getCategory() {
 
-
-            //点击模态框中的确认按钮
-            $('#model_add').click(function () {
-                //获取用户要新增的 文字类别和别名
-                var recipient_name = $('#recipient-name').val();
-                var recipient_nickname = $('#recipient-nickname').val();
-
-                //发送ajax请求
                 $.ajax({
-                    type: 'post',
-                    url: 'http://localhost:8000/admin/category_add',
-                    data: {
-                        name: recipient_name,
-                        slug: recipient_nickname
-                    },
+                    type: 'get',
+                    url: 'http://localhost:8000/admin/category_search',
                     success: function (backData) {
                         //console.log(backData);
                         if (backData.code == 200) {
-                            //新增成功后,重新的发送一次ajax请求加载所有的文字类别
-                            $.ajax({
-                                type: 'get',
-                                url: 'http://localhost:8000/admin/category_search',
-                                success: function (backData) {
-                                    //console.log(backData);
-                                    if (backData.code == 200) {
-                                        //通过模板引擎把返回的数据渲染到页面
-                                        //调用模板引擎的方法
-                                        var resHtml = template('tmp_cate', backData);
-                                        $('tbody').html(resHtml);
-                                    }
-                                }
-                            });
+                            //通过模板引擎把返回的数据渲染到页面
+                            //调用模板引擎的方法
+                            var resHtml = template('tmp_cate', backData);
+                            $('tbody').html(resHtml);
                         }
                     }
                 });
+            }
+            getCategory();
 
+            //点击模态框中的确认按钮
+            $('#model_add').click(function () {
+
+                if ($(this).hasClass('btn-success')) {
+
+                    var data1 = $('form').serialize();
+
+                    $.ajax({
+                        type: 'post',
+                        url: 'http://localhost:8000/admin/category_edit',
+                        data: data1,
+                        success: function (backData) {
+                            if (backData.code == 200) {
+                                getCategory();
+                            }
+                        }
+                    });
+                } else {
+                    //获取用户要新增的 文字类别和别名
+                    var recipient_name = $('#recipient-name').val();
+                    var recipient_nickname = $('#recipient-nickname').val();
+
+                    //发送ajax请求
+                    $.ajax({
+                        type: 'post',
+                        url: 'http://localhost:8000/admin/category_add',
+                        data: {
+                            name: recipient_name,
+                            slug: recipient_nickname
+                        },
+                        success: function (backData) {
+                            //console.log(backData);
+                            if (backData.code == 200) {
+                                //新增成功后,重新的发送一次ajax请求加载所有的文字类别
+                                $.ajax({
+                                    type: 'get',
+                                    url: 'http://localhost:8000/admin/category_search',
+                                    success: function (backData) {
+                                        //console.log(backData);
+                                        if (backData.code == 200) {
+                                            //通过模板引擎把返回的数据渲染到页面
+                                            //调用模板引擎的方法
+                                            var resHtml = template('tmp_cate', backData);
+                                            $('tbody').html(resHtml);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
                 //隐藏模态框
                 $('#addModal').modal('hide');
             });
@@ -216,11 +229,11 @@
 ​                   获取用户修改后的文章类别名称 和别名,  发送ajax请求.修改
             */
             // 1.委托的方式给编辑按钮注册事件.给编辑按钮设置自定义属性data - id保存要删除的这一条数据的id.
-            $('tbody').on('click','a.btn-ye',function(){
+            $('tbody').on('click', 'a.btn-ye', function () {
                 var id = $(this).attr('data-id');
                 var name = $(this).parent().prev().prev().text(); //文章类型名
                 var slug = $(this).parent().prev().text(); //文章类型别名
-                 //把这两个值赋值给弹出来的模态框的input标签.
+                //把这两个值赋值给弹出来的模态框的input标签.
                 $('#recipient-name').val(name);//分类名称
                 $('#recipient-nickname').val(slug);//分类名称
                 $('#recipient-id').val(id);//分类名称
@@ -230,7 +243,7 @@
                 $('#addModal').modal('show');
 
                 // 点击新增分类按钮, 弹出的模态框 里面的信息要还原.
-                $('#addCategory').on('click',function(){
+                $('#addCategory').on('click', function () {
                     $('#recipient-name').val('');//分类名称
                     $('#recipient-nickname').val('');//分类名称
                     $('#recipient-id').val('');//分类名称
@@ -241,33 +254,33 @@
             });
 
             // 1.给删除按钮设置点击事件.(删除按钮是模板引擎动态生成的,所以要用委托注册)
-            $('tbody').on('click','a.btn-yun',function(){
+            $('tbody').on('click', 'a.btn-yun', function () {
                 var that = $(this);
                 var id = $(this).attr('data-id');
                 // 2.获取当前删除的这条数据(这条文章类别)的id
                 $.ajax({
-                    type:'post',
-                    url:'http://localhost:8000/admin/category_delete',
-                    data:{
-                        id:id
+                    type: 'post',
+                    url: 'http://localhost:8000/admin/category_delete',
+                    data: {
+                        id: id
                     },
-                    success: function(backData){
+                    success: function (backData) {
                         console.log(backData);
-                        if(backData.code == 200){
+                        if (backData.code == 200) {
                             that.parent().parent().remove();
                         };
                     }
                 });
             });
         });
-        
-            /*
-                1.给删除按钮设置点击事件.(删除按钮是模板引擎动态生成的,所以要用委托注册)
-                2.获取当前删除的这条数据(这条文章类别)的id
-                3.发送ajax请求,删除这条数据
-​	                删除成功要重新渲染数据:
-​	                我们用了一个投机的方式,直接把这一条数据给从dom树移除.
-            */
+
+        /*
+            1.给删除按钮设置点击事件.(删除按钮是模板引擎动态生成的,所以要用委托注册)
+            2.获取当前删除的这条数据(这条文章类别)的id
+            3.发送ajax请求,删除这条数据
+                  删除成功要重新渲染数据:
+                  我们用了一个投机的方式,直接把这一条数据给从dom树移除.
+        */
     </script>
 
 </body>
